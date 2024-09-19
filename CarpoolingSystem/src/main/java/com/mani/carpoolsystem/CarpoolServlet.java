@@ -1,54 +1,80 @@
 package com.mani.carpoolsystem;
 
 import jakarta.servlet.ServletException;
-import java.io.IOException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Servlet implementation class CarpoolServlet
  */
+//WebServlet("/Carpool")
 public class CarpoolServlet extends HttpServlet {
-	 private List<String> rides;
-	
-	private static final long serialVersionUID = 1L;
-       
+    private static final long serialVersionUID = 1L;
+
+    // Thread-safe list to store rides
+    private List<String> rides = new CopyOnWriteArrayList<>();
+
     /**
      * @see HttpServlet#HttpServlet()
      */
-	public void init() throws ServletException {
-        rides = new ArrayList<>();
-        log("CarpoolServlet initialized with available rides.");
-    }
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        log("Received request: " + req.getMethod() + " " + req.getRequestURI());
-        super.service(req, resp);
-    }
     public CarpoolServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		 response.getWriter().println("Carpooling System is up and running!");
-	}
+    /**
+     * Handles GET request to display available rides and offer form.
+     */
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/html");
+        resp.setCharacterEncoding("UTF-8");
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
-	 public void destroy() {
-	        log("CarpoolServlet is being terminated.");
-	    }
+        // HTML structure to display available rides
+        resp.getWriter().println("<html><head><title>Carpooling System</title></head><body>");
+        resp.getWriter().println("<h1 style='color: #0066cc;'>Available Carpool Rides</h1>");
 
+        // Display the list of rides
+        if (rides.isEmpty()) {
+            resp.getWriter().println("<p style='color: #cc0000;'>No rides available at the moment.</p>");
+        } else {
+            resp.getWriter().println("<ul>");
+            for (String ride : rides) {
+                resp.getWriter().println("<li>" + ride + "</li>");
+            }
+            resp.getWriter().println("</ul>");
+        }
+
+        // Display form to offer a new ride
+        resp.getWriter().println("<h2 style='color: #0066cc;'>Offer a New Carpool Ride</h2>");
+        resp.getWriter().println("<form method='POST' action='Carpool'>");
+        resp.getWriter().println("Start Location: <input type='text' name='start' required><br><br>");
+        resp.getWriter().println("Destination: <input type='text' name='destination' required><br><br>");
+        resp.getWriter().println("Seats Available: <input type='number' name='seats' min='1' required><br><br>");
+        resp.getWriter().println("<input type='submit' value='Offer Ride' style='background-color: #0066cc; color: white;'>");
+        resp.getWriter().println("</form>");
+
+        // End of HTML
+        resp.getWriter().println("</body></html>");
+    }
+
+    /**
+     * Handles POST request to offer a new carpool ride.
+     */
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // Retrieve form parameters
+        String start = req.getParameter("start");
+        String destination = req.getParameter("destination");
+        String seats = req.getParameter("seats");
+
+        // Business logic: Add new ride to the list
+        String newRide = "From " + start + " to " + destination + " - Seats: " + seats;
+        rides.add(newRide);
+
+        // Redirect to the GET method to display updated list of rides
+        resp.sendRedirect(req.getContextPath()+"/Carpool");
+    }
 }

@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Servlet implementation class CarpoolServlet
  */
-//WebServlet("/Carpool")
+@WebServlet("/Carpool")
 public class CarpoolServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
